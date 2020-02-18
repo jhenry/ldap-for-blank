@@ -25,7 +25,7 @@ class LDAP extends PluginAbstract
 	/**
 	* @var string Current version of plugin
 	*/
-	public $version = '0.0.2';
+	public $version = '0.0.3';
 	
 	/**
 	* The plugin's gateway into codebase. Place plugin hook attachments here.
@@ -34,82 +34,6 @@ class LDAP extends PluginAbstract
 		// Nothing to load.
 	}
 	
-	/**
-        * Performs install operations for plugin. Called when user clicks install
-        * plugin in admin panel.
-        *
-        * Add User table columns for homedirectory, ou, cn.
-        * TODO: check for existing columns
-        */
-        public function install(){
-                $user_meta_query = "ALTER TABLE users
-                                ADD homedirectory VARCHAR(255),
-                                ADD affiliation VARCHAR(255),
-                                ADD ou VARCHAR(255),
-                                ADD cn VARCHAR(255);";
-
-                $db = Registry::get('db');
-                //$db->basicQuery($user_meta_query);
-                //$db->basicQuery($video_meta_query);
-
-        }
-
-        /**
-        * Performs uninstall operations for plugin. Called when user clicks
-        * uninstall plugin in admin panel and prior to files being removed.
-        *
-        * Removes columns and data for homedirectory and ldap fields.
-        * TODO: some sort of validation and stray-click safeguards here.
-        * TODO: Check that columns exist.
-        * TODO: a "soft-delete" to allow install/uninstall testing without deleting files/assets.
-        */
-        public function uninstall(){
-                $uninstall_query = "ALTER TABLE users
-                                        DROP COLUMN homedirectory,
-                                        DROP COLUMN affiliation,
-                                        DROP COLUMN ou,
-                                        DROP COLUMN cn;";
-
-                $db = Registry::get('db');
-                //$db->basicQuery($uninstall_query);
-        }
-	/**
-        * Set user meta data.
-        *
-        * @user User object.
-        *
-        */
-        public function set_user_meta($user)
-        {
-		// Get directory entry for this user
-		$ldap = LDAP::get_entry($user->username);
-
-		$user->email = $ldap['mail'] ?? $user->username . '@uvm.edu';
-		$user->firstName = $ldap['givenName'] ?? NULL;
-		$user->lastName = $ldap['sn'] ?? NULL;
-		$user->website = $ldap['labeledURI'] ?? NULL;
-		
-		//title, ou, affiliation, homedir
-		$user->homedirectory = $ldap['homeDirectory'];
-
-		include 'UserReMapper.php';
-		$userMapper = new UserReMapper();
-                $userMapper->save($user);	
-        }
-	
-	/**
-	* Get Custom version of UserMapper class.  
-	* 
-	* return \UserReMapper
-	*
-	*/
-	public function get_user_remapper() {
-		
-		include_once 'UserReMapper.php';
-		$user_remapper = new UserReMapper();
-		return $user_remapper;
-	
-	}
 
 	/**
 	 * Lookup a user in the directory.
@@ -205,34 +129,6 @@ class LDAP extends PluginAbstract
 			}
 		}
 		return $retEntry;
-	}
-	
-
-	/**
-	* Pretty print vars for more convenient debugging.
-	*
-	* @var object/array to print
-	*
-	*/
-	private function tracer($var) {
-		echo " ============================= ";
-		echo "<pre>";
-		var_dump($var); 
-		echo "</pre>";
-	}
-	
-	
-	/**
-	* Handle and display an error in the proper context.
-	*
-	* @var string Error message to display.
-	*
-	*/
-	private function do_exception($errorMessage)
-	{
-		//TODO: Hook into filter for system error view 
-		echo "Error:" . $errorMessage;
-		exit;
 	}
 }
 
