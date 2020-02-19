@@ -34,6 +34,34 @@ class LDAP extends PluginAbstract
 		// Nothing to load.
 	}
 
+	/**
+	 * Performs install operations for plugin. Called when user clicks install
+	 * plugin in admin panel.
+	 *
+	 */
+	public function install()
+	{
+		// Add default directory fields to Settings.
+		$attributes = array('homeDirectory', 'givenName', 'sn', 'ou', 'labeledURI', 'mail', 'eduPersonPrimaryAffiliation');
+
+		Settings::set('ldap_attributes', json_encode($attributes));
+		Settings::set('ldap_filter_prefix', 'netid');
+		Settings::set('ldap_uri', 'ldaps://ldap.uvm.edu');
+		Settings::set('ldap_dn_string', 'dc=uvm,dc=edu');
+	}
+	/**
+	 * Performs uninstall operations for plugin. Called when user clicks
+	 * uninstall plugin in admin panel and prior to files being removed.
+	 *
+	 */
+	public function uninstall()
+	{
+		Settings::remove('ldap_attributes');
+		Settings::remove('ldap_filter_prefix');
+		Settings::remove('ldap_uri');
+		Settings::remove('ldap_dn_string');
+	}
+
 
 	/**
 	 * Lookup a user in the directory.
@@ -71,12 +99,12 @@ class LDAP extends PluginAbstract
 	 */
 	public function get_ldap_entry($username)
 	{
-
-		$filter = "netid=" . $username;
+		$prefix = Settings::get('ldap_filter_prefix');
+		$filter = $prefix . "=" . $username;
 
 		// Connection and Base DN string configuration.
-		$ldapserver = "ldaps://ldap.uvm.edu";
-		$dnstring = "dc=uvm,dc=edu";
+		$ldapserver = Settings::get('ldap_uri');
+		$dnstring = Settings::get('ldap_dn_string');
 
 		$ds = ldap_connect($ldapserver);
 
