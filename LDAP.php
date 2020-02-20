@@ -64,30 +64,26 @@ class LDAP extends PluginAbstract
 
 
   /**
-   * Lookup a user in the directory.
+   * Lookup a user in the directory and return all of their attributes.
    * 
    * @param string $username ID of user to query in the directory
-   * @return bool Indicator for whether or not to only return the default attributes defined in settings. 
    */
-  public function get($username, $defaults = true)
+  public function get_all($username)
   {
-    $directory_entry = LDAP::flatten_ldap_arrays(LDAP::directory_query($username));
-    if ($defaults) {
-      LDAP::filter_default_attributes($directory_entry);
-    } else {
-      return $directory_entry;
-    }
+    return LDAP::flatten_ldap_arrays(LDAP::directory_query($username));
   }
 
   /**
-   * Filter default attributes from raw directory query
-   * 
+   * Perform user lookup, filtering results based on default attributes from settings.
+   *    
    * @param array $ldap_array
    * @return array
    */
-  public function filter_default_attributes($entry)
-  {
-      foreach( Settings::get('ldap_attributes') as $attribute ) {
+  public function get_default($entry)
+  { 
+    $directory_entry = LDAP::flatten_ldap_arrays(LDAP::directory_query($username));
+      $attributes = json_decode(Settings::get('ldap_attributes'));
+      foreach( $attributes as $attribute ) {
         $filtered_entry[$attribute] = $entry[$attribute];
       }
 
