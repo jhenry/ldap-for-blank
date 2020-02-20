@@ -75,13 +75,14 @@ class LDAP extends PluginAbstract
 
   /**
    * Perform user lookup, filtering results based on default attributes from settings.
-   *    
+   * TODO: Naming is hard.   
+   * 
    * @param array $ldap_array
    * @return array
    */
-  public function get_default($entry)
+  public function get_default_attributes($username)
   { 
-    $directory_entry = LDAP::flatten_ldap_arrays(LDAP::directory_query($username));
+    $entry = LDAP::flatten_ldap_arrays(LDAP::directory_query($username));
       $attributes = json_decode(Settings::get('ldap_attributes'));
       foreach( $attributes as $attribute ) {
         $filtered_entry[$attribute] = $entry[$attribute];
