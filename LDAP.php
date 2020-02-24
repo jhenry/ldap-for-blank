@@ -75,7 +75,6 @@ class LDAP extends PluginAbstract
 
   /**
    * Perform user lookup, filtering results based on default attributes from settings.
-   * TODO: Naming is hard.   
    * 
    * @param array $ldap_array
    * @return array
