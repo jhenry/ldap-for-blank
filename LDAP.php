@@ -80,7 +80,7 @@ class LDAP extends PluginAbstract
    * @param array $ldap_array
    * @return array
    */
-  public function get_default_attributes($username)
+  public function get($username)
   { 
     $entry = LDAP::flatten_ldap_arrays(LDAP::directory_query($username));
       $attributes = json_decode(Settings::get('ldap_attributes'));
