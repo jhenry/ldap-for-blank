@@ -84,7 +84,9 @@ class LDAP extends PluginAbstract
     $entry = LDAP::flatten_ldap_arrays(LDAP::directory_query($username));
       $attributes = json_decode(Settings::get('ldap_attributes'));
       foreach( $attributes as $attribute ) {
-        $filtered_entry[$attribute] = $entry[$attribute];
+	if (array_key_exists($attribute, $entry)) {
+	  $filtered_entry[$attribute] = $entry[$attribute];
+	}
       }
 
       return $filtered_entry;
