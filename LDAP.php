@@ -46,8 +46,8 @@ class LDAP extends PluginAbstract
 
     Settings::set('ldap_attributes', json_encode($attributes));
     Settings::set('ldap_filter_prefix', 'netid');
-    Settings::set('ldap_uri', 'ldaps://ldap.uvm.edu');
-    Settings::set('ldap_dn_string', 'dc=uvm,dc=edu');
+    Settings::set('ldap_uri', 'ldaps://ldap.your.edu');
+    Settings::set('ldap_dn_string', 'dc=your,dc=edu');
   }
   /**
    * Performs uninstall operations for plugin. Called when user clicks
@@ -179,4 +179,110 @@ class LDAP extends PluginAbstract
     }
     return $retEntry;
   }
+
+  /**
+   * Outputs the settings page HTML and handles form posts on the plugin's
+   * settings page.
+   */
+  public function settings()
+  {
+    $data = array();
+    $errors = array();
+    $message = null;
+
+    // Retrieve settings from database
+    $attributes = json_decode(Settings::get('ldap_attributes'));
+    $data['ldap_attributes'] =  implode($attributes);
+    $data['ldap_filter_prefix'] = Settings::get('ldap_filter_prefix');
+    $data['ldap_uri'] = Settings::get('ldap_uri');
+    $data['ldap_dn_string'] = Settings::get('ldap_dn_string');
+
+    // Handle form if submitted
+    if (isset($_POST['submitted'])) {
+      // Validate form nonce token and submission speed
+      $is_valid_form = LDAP::_validate_form_nonce();
+
+      if ($is_valid_form) {
+        // Validate attributes
+        if (!empty($_POST['ldap_attributes'])) {
+          $atts = explode($_POST['ldap_attributes']);
+          $data['ldap_attributes'] = json_encode($atts);
+        } else {
+          $errors['ldap_attributes'] = 'LDAP search attributes must be a comma separated list of valid directory attributes.';
+        }
+        // Validate filter prefix
+        if (!empty($_POST['ldap_filter_prefix'])) {
+          $data['ldap_filter_prefix'] = trim($_POST['ldap_filter_prefix']);
+        } else {
+          $errors['ldap_filter_prefix'] = 'Invalid/missing LDAP filter prefix. ';
+        }
+        // Validate LDAP URI
+        if (!empty($_POST['ldap_uri'])) {
+          $data['ldap_uri'] = trim($_POST['ldap_uri']);
+        } else {
+          $errors['ldap_uri'] = 'Invalid/missing LDAP URI string. ';
+        }
+
+        // Validate LDAP dn string 
+        if (!empty($_POST['ldap_dn_string'])) {
+          $data['ldap_dn_string'] = trim($_POST['ldap_dn_string']);
+        } else {
+          $errors['ldap_dn_string'] = 'Invalid/missing LDAP dn string. ';
+        }
+      } else {
+        $errors['session'] = 'Expired or invalid session';
+      }
+
+      // Error check and update data
+      LDAP::_handle_settings_form($data, $errors);
+    }
+    // Generate new form nonce
+    $formNonce = md5(uniqid(rand(), true));
+    $_SESSION['formNonce'] = $formNonce;
+    $_SESSION['formTime'] = time();
+
+    // Display form
+    include(dirname(__FILE__) . '/settings_form.php');
+  }
+
+  /**
+   * Check for form errors and save settings
+   * 
+   */
+  private function _handle_settings_form($data, $errors)
+  {
+    if (empty($errors)) {
+      foreach ($data as $key => $value) {
+        Settings::set($key, $value);
+      }
+      $message = 'Settings have been updated.';
+      $message_type = 'alert-success';
+    } else {
+      $message = 'The following errors were found. Please correct them and try again.';
+      $message .= '<br /><br /> - ' . implode('<br /> - ', $errors);
+      $message_type = 'alert-danger';
+    }
+  }
+
+  /**
+   * Validate settings form nonce token and submission speed
+   * 
+   */
+  private function _validate_form_nonce()
+  {
+    if (
+      !empty($_POST['nonce'])
+      && !empty($_SESSION['formNonce'])
+      && !empty($_SESSION['formTime'])
+      && $_POST['nonce'] == $_SESSION['formNonce']
+      && time() - $_SESSION['formTime'] >= 2
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+
+
 }
