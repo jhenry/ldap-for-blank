@@ -192,7 +192,7 @@ class LDAP extends PluginAbstract
 
     // Retrieve settings from database
     $attributes = json_decode(Settings::get('ldap_attributes'));
-    $data['ldap_attributes'] =  implode($attributes);
+    $data['ldap_attributes'] = implode($attributes, ',');
     $data['ldap_filter_prefix'] = Settings::get('ldap_filter_prefix');
     $data['ldap_uri'] = Settings::get('ldap_uri');
     $data['ldap_dn_string'] = Settings::get('ldap_dn_string');
