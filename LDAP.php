@@ -235,6 +235,9 @@ class LDAP extends PluginAbstract
 
       // Error check and update data
       LDAP::_handle_settings_form($data, $errors);
+
+      // Set attribute form data back to csv for display/editing
+      $data['ldap_attributes'] = trim($_POST['ldap_attributes']);
     }
     // Generate new form nonce
     $formNonce = md5(uniqid(rand(), true));
