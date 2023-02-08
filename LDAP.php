@@ -68,7 +68,7 @@ class LDAP extends PluginAbstract
    * 
    * @param string $username ID of user to query in the directory
    */
-  public function get_all($username)
+  public static function get_all($username)
   {
     return LDAP::flatten_ldap_arrays(LDAP::directory_query($username));
   }
@@ -79,7 +79,7 @@ class LDAP extends PluginAbstract
    * @param array $ldap_array
    * @return array
    */
-  public function get($username)
+  public static function get($username)
   { 
     $entry = LDAP::flatten_ldap_arrays(LDAP::directory_query($username));
       $attributes = json_decode(Settings::get('ldap_attributes'));
@@ -98,7 +98,7 @@ class LDAP extends PluginAbstract
    * @param array $ldap_array raw directory query result
    * @return array $ldap_array "flattened" array.
    */
-  public function flatten_ldap_arrays($ldap_array)
+  public static function flatten_ldap_arrays($ldap_array)
   {
     foreach ($ldap_array as &$item) {
       if (is_array($item)) {
@@ -115,7 +115,7 @@ class LDAP extends PluginAbstract
    * @param int $username
    * @return array
    */
-  public function directory_query($username)
+  public static function directory_query($username)
   {
     $prefix = Settings::get('ldap_filter_prefix');
     $filter = $prefix . "=" . $username;
@@ -155,7 +155,7 @@ class LDAP extends PluginAbstract
    * @param array $entry
    * @return array
    */
-  public function cleanUpEntry($entry)
+  public static function cleanUpEntry($entry)
   {
     $retEntry = array();
     for ($i = 0; $i < $entry['count']; $i++) {
